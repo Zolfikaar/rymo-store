@@ -309,13 +309,17 @@ footer .featured-list li a:hover{
   color: #fb774b;
 }
 
-footer .copyright .row{
+footer .payment-and-social-media{
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: space-between; 
 }
 
-footer .copyright a{
+footer .payment-and-social-media .payment,
+footer .payment-and-social-media .social-links{
+  margin-top: 20px;
+}
+
+footer .payment-and-social-media .social-links a{
   color: #000;
   width: 38px;
   height: 38px;
@@ -327,16 +331,21 @@ footer .copyright a{
   transition: .3s ease;
   margin: 0 5px;
 }
-
-footer .copyright a:hover{
+footer .payment-and-social-media .social-links a:hover{
   color: #fff;
   background-color: #fb774b;
 }
 
-footer .copyright .social-links{
-  display: flex;
-  justify-content: flex-end;
-  
+footer .copyright p{
+  color: #999;
+  font-size: .8rem;
+}
+
+@media only screen and (min-width:375px) and (max-width:762px) {
+  footer .payment-and-social-media{
+    align-items: center;
+    margin-bottom: 0 !important;
+  }
 }
 
 /* ######################################## Blog Section############################################# */
