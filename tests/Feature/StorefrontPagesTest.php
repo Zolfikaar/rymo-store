@@ -1,15 +1,41 @@
 <?php
 
+beforeEach(function () {
+    seedStorefrontCatalog();
+});
+
 it('renders the product detail page', function () {
-    $response = $this->get(route('shop.product', 1));
+    $response = $this->get(route('shop.product', 'mens-fashion-tee'));
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('Shop/Show')
         ->has('product')
-        ->has('relatedProducts', 4)
+        ->has('relatedProducts')
+        ->where('product.slug', 'mens-fashion-tee')
         ->where('product.name', "Men's Fashion T Shirt")
+        ->where('product.price', '$139.00')
+        ->where('product.images', [
+            '/img/shop/1.jpg',
+            '/img/shop/24.jpg',
+            '/img/shop/25.jpg',
+            '/img/shop/26.jpg',
+        ])
     );
+});
+
+it('does not leak gallery images for products without extras', function () {
+    $response = $this->get(route('shop.product', 'alpine-trail-boots'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->where('product.slug', 'alpine-trail-boots')
+        ->where('product.images', ['/img/shop/2.jpg'])
+    );
+});
+
+it('returns 404 for unknown product slugs', function () {
+    $this->get(route('shop.product', 'non-existent-product'))->assertNotFound();
 });
 
 it('renders the blog page', function () {

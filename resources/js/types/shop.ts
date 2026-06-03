@@ -1,10 +1,10 @@
 export interface Product {
     id: number;
+    slug: string;
     name: string;
     price: string;
     image: string;
     rating: number;
-    slug?: string;
 }
 
 export interface ProductDetail {

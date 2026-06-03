@@ -2,25 +2,19 @@
 import type { Product } from '@/types/shop';
 import { router } from '@inertiajs/vue3';
 
-const props = defineProps<{
+defineProps<{
     product: Product;
-    navigateOnClick?: boolean;
 }>();
 
-function handleCardClick(): void {
-    if (!props.navigateOnClick || !props.product.slug) {
-        return;
-    }
-
-    router.visit(route('shop.product', props.product.slug));
+function handleCardClick(slug: string): void {
+    router.visit(route('shop.product', slug));
 }
 </script>
 
 <template>
     <div
-        class="product text-center col-lg-3 col-md-4 col-12"
-        :class="{ 'product--clickable': navigateOnClick }"
-        @click="handleCardClick"
+        class="product product--clickable text-center col-lg-3 col-md-4 col-12"
+        @click="handleCardClick(product.slug)"
     >
         <img :src="product.image" :alt="product.name" class="img-fluid mb-3" />
         <div class="star">
@@ -35,5 +29,30 @@ function handleCardClick(): void {
 <style scoped>
 .product--clickable {
     cursor: pointer;
+}
+
+.product {
+    cursor: pointer;
+    margin-bottom: 2rem;
+}
+
+.product img {
+    transition: .3s all;
+}
+
+.product:hover img {
+    opacity: .7;
+}
+
+.product .buy-btn {
+    background: #fb774b;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: .3s all;
+}
+
+.product:hover .buy-btn {
+    opacity: 1;
+    transform: translateY(0);
 }
 </style>

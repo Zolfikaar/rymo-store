@@ -1,56 +1,14 @@
 <?php
 
+use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home');
-})->name('home');
+Route::get('/', [ShopController::class, 'home'])->name('home');
 
-Route::get('/shop', function () {
-    $products = collect(range(1, 20))->map(fn (int $i): array => [
-        'id' => $i,
-        'name' => 'Sport Boots',
-        'price' => '$92.00',
-        'image' => "/img/shop/{$i}.jpg",
-        'rating' => 5,
-        'slug' => (string) $i,
-    ])->all();
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 
-    return Inertia::render('Shop/Index', [
-        'products' => $products,
-    ]);
-})->name('shop');
-
-Route::get('/shop/{product}', function (string $product) {
-    $id = max(1, (int) $product);
-
-    return Inertia::render('Shop/Show', [
-        'product' => [
-            'id' => $id,
-            'slug' => $product,
-            'name' => "Men's Fashion T Shirt",
-            'price' => '$139.00',
-            'category' => 'Home / T-Shirt',
-            'description' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti quasi cupiditate sapiente magnam consectetur neque molestiae modi, quisquam vel voluptates, unde consequatur repellendus deleniti explicabo! Voluptate ex reprehenderit alias provident.',
-            'images' => [
-                "/img/shop/{$id}.jpg",
-                '/img/shop/24.jpg',
-                '/img/shop/25.jpg',
-                '/img/shop/26.jpg',
-            ],
-            'sizes' => ['XL', 'XXL', '3XL', '4XL'],
-        ],
-        'relatedProducts' => collect(range(1, 4))->map(fn (int $i): array => [
-            'id' => $i,
-            'name' => 'Sport Boots',
-            'price' => '$92.00',
-            'image' => "/img/featured/{$i}.jpg",
-            'rating' => 5,
-            'slug' => (string) $i,
-        ])->all(),
-    ]);
-})->name('shop.product');
+Route::get('/shop/{product:slug}', [ShopController::class, 'show'])->name('shop.product');
 
 Route::get('/blog', function () {
     $posts = [

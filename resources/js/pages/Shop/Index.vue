@@ -61,9 +61,8 @@ function goToPage(page: number): void {
                 <div class="row mx-auto">
                     <ProductCard
                         v-for="product in products"
-                        :key="product.id"
+                        :key="product.slug"
                         :product="product"
-                        :navigate-on-click="product.id === 1"
                     />
 
                     <nav aria-label="...">
@@ -89,3 +88,32 @@ function goToPage(page: number): void {
         </section>
     </ShopLayout>
 </template>
+
+<style scoped>
+.product img {
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    object-fit: cover;
+}
+
+#featured .pagination .page-link {
+    color: #1d1d1d;
+}
+
+#featured .pagination .page-item.active .page-link {
+    background-color: coral;
+    border-color: coral;
+    color: #fff;
+}
+
+#featured .pagination .page-item:not(.disabled):hover .page-link {
+    background-color: coral;
+    border-color: coral;
+    color: #fff;
+}
+
+#featured .pagination .page-item.disabled .page-link {
+    color: #999;
+}
+</style>

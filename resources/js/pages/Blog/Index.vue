@@ -57,3 +57,28 @@ function postColumnClass(post: BlogPost): string {
         </section>
     </ShopLayout>
 </template>
+
+<style scoped>
+#blog-container .post .post-img {
+    overflow: hidden;
+    cursor: pointer;
+}
+
+#blog-container .post img {
+    transition: .3s ease;
+}
+
+#blog-container .post:hover img {
+    transform: scale(1.1);
+    opacity: .9;
+}
+
+#blog-container .post h3 {
+    transition: .3s ease;
+    cursor: pointer;
+}
+
+#blog-container .post:hover h3 {
+    color: #fd8c66
+}
+</style>
