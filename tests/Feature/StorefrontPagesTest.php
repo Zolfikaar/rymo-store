@@ -52,10 +52,7 @@ it('renders the cart page', function () {
     $response = $this->get(route('cart'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('Cart')
-        ->has('items', 3)
-    );
+    $response->assertInertia(fn ($page) => $page->component('Cart'));
 });
 
 it('renders the contact page', function () {

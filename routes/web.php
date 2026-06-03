@@ -49,15 +49,7 @@ Route::post('/contact', function () {
 })->name('contact.submit');
 
 Route::get('/cart', function () {
-    $items = [
-        ['id' => 1, 'name' => 'Handbag Fringillia', 'price' => 65, 'quantity' => 1, 'image' => '/img/shoes/2.jpg'],
-        ['id' => 2, 'name' => 'Handbag Fringillia', 'price' => 65, 'quantity' => 1, 'image' => '/img/shoes/3.jpg'],
-        ['id' => 3, 'name' => 'Handbag Fringillia', 'price' => 65, 'quantity' => 1, 'image' => '/img/shoes/1.jpg'],
-    ];
-
-    return Inertia::render('Cart', [
-        'items' => $items,
-    ]);
+    return Inertia::render('Cart');
 })->name('cart');
 
 Route::get('dashboard', function () {

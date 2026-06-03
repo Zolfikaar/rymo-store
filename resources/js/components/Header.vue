@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useCart } from '@/composables/useCart';
 import { Link } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref } from 'vue';
+
+const { itemCount } = useCart();
 
 const isNavOpen = ref(false);
 const isBarActive = ref(false);
@@ -89,10 +92,11 @@ onUnmounted(() => {
                         </Link>
                         <a v-else class="nav-link" href="#" @click="closeNav">{{ link.label }}</a>
                     </li>
-                    <li class="nav-item" >
+                    <li class="nav-item">
                         <i class="fa fa-search" aria-hidden="true"></i>
-                        <Link :href="route('cart')" @click="closeNav" >
+                        <Link :href="route('cart')" class="cart-link" @click="closeNav">
                             <i class="fa fa-shopping-bag" aria-hidden="true" :class="{ active: isActive('cart') }"></i>
+                            <span v-if="itemCount > 0" class="cart-badge">{{ itemCount }}</span>
                         </Link>
                     </li>
                 </ul>
@@ -129,6 +133,30 @@ onUnmounted(() => {
     font-weight: 500;
     transition: 0.3s ease;
     color: black;
+}
+
+.cart-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: 8px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background-color: #fb774b;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    pointer-events: none;
 }
 
 .navbar-light .navbar-toggler {

@@ -1,48 +1,60 @@
 <script setup lang="ts">
 import ProductCard from '@/components/ProductCard.vue';
 import ShopLayout from '@/layouts/ShopLayout.vue';
-import type { Product } from '@/types/shop';
-import { Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import type { PaginatedProducts } from '@/types/shop';
+import { Head, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-defineProps<{
-    products: Product[];
+const props = defineProps<{
+    products: PaginatedProducts;
 }>();
 
-const currentPage = ref(1);
-const totalPages = 3;
+const paginationItems = computed(() => {
+    const { current_page, last_page } = props.products.meta;
 
-const paginationItems = computed(() => [
-    {
-        label: 'Previous',
-        page: currentPage.value - 1,
-        disabled: currentPage.value === 1,
-        active: false,
-    },
-    ...Array.from({ length: totalPages }, (_, index) => {
-        const page = index + 1;
+    return [
+        {
+            label: 'Previous',
+            page: current_page - 1,
+            disabled: current_page === 1,
+            active: false,
+        },
+        ...Array.from({ length: last_page }, (_, index) => {
+            const page = index + 1;
 
-        return {
-            label: String(page),
-            page,
-            disabled: false,
-            active: page === currentPage.value,
-        };
-    }),
-    {
-        label: 'Next',
-        page: currentPage.value + 1,
-        disabled: currentPage.value === totalPages,
-        active: false,
-    },
-]);
+            return {
+                label: String(page),
+                page,
+                disabled: false,
+                active: page === current_page,
+            };
+        }),
+        {
+            label: 'Next',
+            page: current_page + 1,
+            disabled: current_page === last_page,
+            active: false,
+        },
+    ];
+});
+
+const showPagination = computed(() => props.products.meta.last_page > 1);
 
 function goToPage(page: number): void {
-    if (page < 1 || page > totalPages) {
+    const { last_page } = props.products.meta;
+
+    if (page < 1 || page > last_page) {
         return;
     }
 
-    currentPage.value = page;
+    router.get(
+        route('shop'),
+        { page },
+        {
+            preserveState: true,
+            only: ['products'],
+        },
+    );
 }
 </script>
 
@@ -60,16 +72,16 @@ function goToPage(page: number): void {
 
                 <div class="row mx-auto">
                     <ProductCard
-                        v-for="product in products"
+                        v-for="product in products.data"
                         :key="product.slug"
                         :product="product"
                     />
 
-                    <nav aria-label="...">
+                    <nav v-if="showPagination" aria-label="Shop pagination">
                         <ul class="pagination mt-5">
                             <li
                                 v-for="item in paginationItems"
-                                :key="item.label"
+                                :key="`${item.label}-${item.page}`"
                                 class="page-item"
                                 :class="{ active: item.active, disabled: item.disabled }"
                             >
@@ -90,13 +102,6 @@ function goToPage(page: number): void {
 </template>
 
 <style scoped>
-.product img {
-    width: 100%;
-    height: auto;
-    box-sizing: border-box;
-    object-fit: cover;
-}
-
 #featured .pagination .page-link {
     color: #1d1d1d;
 }

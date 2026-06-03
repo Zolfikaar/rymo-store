@@ -15,10 +15,11 @@ class ShopController extends Controller
     {
         $products = Product::query()
             ->orderBy('id')
-            ->get();
+            ->paginate(8)
+            ->withQueryString();
 
         return Inertia::render('Shop/Index', [
-            'products' => ProductCardResource::collection($products)->resolve(),
+            'products' => ProductCardResource::collection($products),
         ]);
     }
 

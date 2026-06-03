@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ProductCard from '@/components/ProductCard.vue';
+import { parseProductPrice, useCart } from '@/composables/useCart';
 import ShopLayout from '@/layouts/ShopLayout.vue';
 import type { Product, ProductDetail } from '@/types/shop';
 import { Head } from '@inertiajs/vue3';
@@ -10,6 +11,8 @@ const props = defineProps<{
     relatedProducts: Product[];
 }>();
 
+const { addItem } = useCart();
+
 const mainImage = ref(props.product.images[0] ?? '');
 const selectedSize = ref('');
 const quantity = ref(1);
@@ -19,6 +22,16 @@ const showSizeSelector = computed(() => props.product.sizes.length > 0);
 
 function setMainImage(image: string): void {
     mainImage.value = image;
+}
+
+function addToCart(): void {
+    addItem({
+        id: props.product.id,
+        name: props.product.name,
+        price: parseProductPrice(props.product.price),
+        image: props.product.images[0] ?? '',
+        quantity: quantity.value,
+    });
 }
 </script>
 
@@ -50,7 +63,7 @@ function setMainImage(image: string): void {
                         </option>
                     </select>
                     <input v-model.number="quantity" type="number" min="1" value="1" />
-                    <button type="button" class="buy-btn my-2">Add To Cart</button>
+                    <button type="button" class="buy-btn my-2" @click="addToCart">Add To Cart</button>
                     <h4 class="my-5">Product Details</h4>
                     <p>{{ product.description }}</p>
                 </div>

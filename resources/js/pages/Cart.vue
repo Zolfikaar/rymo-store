@@ -1,24 +1,13 @@
 <script setup lang="ts">
+import { useCart } from '@/composables/useCart';
 import ShopLayout from '@/layouts/ShopLayout.vue';
 import type { CartItem } from '@/types/cart';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
-const props = defineProps<{
-    items: CartItem[];
-}>();
-
-const cartItems = ref(
-    props.items.map((item) => ({
-        ...item,
-    })),
-);
+const { items: cartItems, isEmpty, subtotal, removeItem } = useCart();
 
 const couponCode = ref('');
-
-const subtotal = computed(() =>
-    cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
-);
 
 const shipping = computed(() => (subtotal.value > 0 ? 15 : 0));
 
@@ -31,10 +20,6 @@ function formatPrice(amount: number): string {
 function lineTotal(item: CartItem): number {
     return item.price * item.quantity;
 }
-
-function removeItem(id: number): void {
-    cartItems.value = cartItems.value.filter((item) => item.id !== id);
-}
 </script>
 
 <template>
@@ -46,83 +31,126 @@ function removeItem(id: number): void {
             <hr />
         </section>
 
-        <section id="cart-container" class="container my-5">
-            <table width="100%">
-                <thead>
-                    <tr>
-                        <td>Remove</td>
-                        <td>Image</td>
-                        <td>Product</td>
-                        <td>Price</td>
-                        <td>Quantity</td>
-                        <td>Total</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="item in cartItems" :key="item.id">
-                        <td>
-                            <a href="#" @click.prevent="removeItem(item.id)">
-                                <i class="fa fa-trash" aria-hidden="true"></i>
-                            </a>
-                        </td>
-                        <td><img :src="item.image" :alt="item.name" /></td>
-                        <td>
-                            <h5>{{ item.name }}</h5>
-                        </td>
-                        <td>
-                            <h5>{{ formatPrice(item.price) }}</h5>
-                        </td>
-                        <td>
-                            <input v-model.number="item.quantity" class="w-25 pl-1" type="number" min="1" />
-                        </td>
-                        <td>
-                            <h5>{{ formatPrice(lineTotal(item)) }}</h5>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <section v-if="isEmpty" class="cart-empty container my-5 py-5">
+            <h2 class="cart-empty__title">Your Cart is Empty</h2>
+            <Link :href="route('shop')" class="cart-empty__cta">Continue Shopping</Link>
         </section>
 
-        <section id="cart-bottom" class="container">
-            <div class="cart-bottom__grid">
-                <div class="cart-panel coupon">
-                    <h5 class="cart-panel__title">COUPON</h5>
-                    <div class="cart-panel__body">
-                        <p class="coupon__hint">Enter your coupon code if you have one</p>
-                        <div class="coupon__form">
-                            <input v-model="couponCode" type="text" placeholder="Coupon Code" />
-                            <button type="button">APPLY COUPON</button>
+        <template v-else>
+            <section id="cart-container" class="container my-5">
+                <table width="100%">
+                    <thead>
+                        <tr>
+                            <td>Remove</td>
+                            <td>Image</td>
+                            <td>Product</td>
+                            <td>Price</td>
+                            <td>Quantity</td>
+                            <td>Total</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in cartItems" :key="item.id">
+                            <td>
+                                <a href="#" @click.prevent="removeItem(item.id)">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                            <td><img :src="item.image" :alt="item.name" /></td>
+                            <td>
+                                <h5>{{ item.name }}</h5>
+                            </td>
+                            <td>
+                                <h5>{{ formatPrice(item.price) }}</h5>
+                            </td>
+                            <td>
+                                <input v-model.number="item.quantity" class="w-25 pl-1" type="number" min="1" />
+                            </td>
+                            <td>
+                                <h5>{{ formatPrice(lineTotal(item)) }}</h5>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="cart-bottom" class="container">
+                <div class="cart-bottom__grid">
+                    <div class="cart-panel coupon">
+                        <h5 class="cart-panel__title">COUPON</h5>
+                        <div class="cart-panel__body">
+                            <p class="coupon__hint">Enter your coupon code if you have one</p>
+                            <div class="coupon__form">
+                                <input v-model="couponCode" type="text" placeholder="Coupon Code" />
+                                <button type="button">APPLY COUPON</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cart-panel total">
+                        <h5 class="cart-panel__title">CART TOTAL</h5>
+                        <div class="cart-panel__body total__body">
+                            <div class="total__rows">
+                                <div class="total__row">
+                                    <h6>Subtotal</h6>
+                                    <p>{{ formatPrice(subtotal) }}</p>
+                                </div>
+                                <div class="total__row">
+                                    <h6>Shipping</h6>
+                                    <p>{{ formatPrice(shipping) }}</p>
+                                </div>
+                                <hr class="total__divider" />
+                                <div class="total__row">
+                                    <h6>Total</h6>
+                                    <p>{{ formatPrice(total) }}</p>
+                                </div>
+                            </div>
+                            <button type="button" class="total__checkout">PROCEED TO CHECKOUT</button>
                         </div>
                     </div>
                 </div>
-
-                <div class="cart-panel total">
-                    <h5 class="cart-panel__title">CART TOTAL</h5>
-                    <div class="cart-panel__body total__body">
-                        <div class="total__rows">
-                            <div class="total__row">
-                                <h6>Subtotal</h6>
-                                <p>{{ formatPrice(subtotal) }}</p>
-                            </div>
-                            <div class="total__row">
-                                <h6>Shipping</h6>
-                                <p>{{ formatPrice(shipping) }}</p>
-                            </div>
-                            <hr class="total__divider" />
-                            <div class="total__row">
-                                <h6>Total</h6>
-                                <p>{{ formatPrice(total) }}</p>
-                            </div>
-                        </div>
-                        <button type="button" class="total__checkout">PROCEED TO CHECKOUT</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </section>
+        </template>
     </ShopLayout>
 </template>
 
 <style scoped>
+.cart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 320px;
+    gap: 2rem;
+}
+
+.cart-empty__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1d1d1d;
+    margin: 0;
+}
+
+.cart-empty__cta {
+    display: inline-block;
+    background-color: #fb774b;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 36px;
+    transition: background-color 0.3s ease;
+}
+
+.cart-empty__cta:hover {
+    background-color: #e8663a;
+    color: #fff;
+    text-decoration: none;
+}
+
 #cart-container {
     overflow-x: auto;
 }
@@ -175,7 +203,7 @@ function removeItem(id: number): void {
     color: #8d8c89;
 }
 
-#cart-container table tbody tr td a:hover i{
+#cart-container table tbody tr td a:hover i {
     color: #ff523b;
 }
 
