@@ -2,12 +2,28 @@
 import { useCart } from '@/composables/useCart';
 import ShopLayout from '@/layouts/ShopLayout.vue';
 import type { CartItem } from '@/types/cart';
-import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
-const { items: cartItems, isEmpty, subtotal, removeItem } = useCart();
+const page = usePage();
+
+const { items: cartItems, isEmpty, subtotal, removeItem, clearCart } = useCart();
 
 const couponCode = ref('');
+
+const successMessage = computed(
+    () => (page.props.flash as { success?: string } | undefined)?.success,
+);
+
+watch(
+    successMessage,
+    (message) => {
+        if (message) {
+            clearCart();
+        }
+    },
+    { immediate: true },
+);
 
 const shipping = computed(() => (subtotal.value > 0 ? 15 : 0));
 
@@ -31,8 +47,13 @@ function lineTotal(item: CartItem): number {
             <hr />
         </section>
 
+        <section v-if="successMessage" class="cart-success-banner container" role="alert">
+            {{ successMessage }}
+        </section>
+
         <section v-if="isEmpty" class="cart-empty container my-5 py-5">
             <h2 class="cart-empty__title">Your Cart is Empty</h2>
+            <p v-if="successMessage" class="cart-success" role="alert">{{ successMessage }}</p>
             <Link :href="route('shop')" class="cart-empty__cta">Continue Shopping</Link>
         </section>
 
@@ -105,7 +126,7 @@ function lineTotal(item: CartItem): number {
                                     <p>{{ formatPrice(total) }}</p>
                                 </div>
                             </div>
-                            <button type="button" class="total__checkout">PROCEED TO CHECKOUT</button>
+                            <Link :href="route('checkout')" class="total__checkout">PROCEED TO CHECKOUT</Link>
                         </div>
                     </div>
                 </div>
@@ -130,6 +151,21 @@ function lineTotal(item: CartItem): number {
     font-weight: 700;
     color: #1d1d1d;
     margin: 0;
+}
+
+.cart-success {
+    margin: 0;
+    color: #198754;
+    font-weight: 600;
+}
+
+.cart-success-banner {
+    margin-top: 1rem;
+    padding: 12px 16px;
+    background-color: #d1e7dd;
+    border: 1px solid #badbcc;
+    color: #0f5132;
+    font-weight: 600;
 }
 
 .cart-empty__cta {
@@ -299,5 +335,23 @@ function lineTotal(item: CartItem): number {
 
 #cart-bottom .total__checkout {
     align-self: flex-end;
+    display: inline-block;
+    background-color: #fb774b;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 24px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#cart-bottom .total__checkout:hover {
+    background-color: #e8663a;
+    color: #fff;
+    text-decoration: none;
 }
 </style>

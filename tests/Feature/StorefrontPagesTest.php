@@ -55,6 +55,13 @@ it('renders the cart page', function () {
     $response->assertInertia(fn ($page) => $page->component('Cart'));
 });
 
+it('renders the checkout page', function () {
+    $response = $this->get(route('checkout'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page->component('Checkout'));
+});
+
 it('renders the contact page', function () {
     $response = $this->get(route('contact'));
 

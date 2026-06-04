@@ -20,7 +20,7 @@
 
 Rymo is not a tutorial clone. It is a **financially disciplined MVP**: every schema decision, UI component, and checkout pathway is designed to minimize rework cost while preserving a credible path toward multi-currency operations, variant matrices, and admin orchestration at scale.
 
-The current release delivers a polished customer-facing storefront (migrated from a legacy static design system) atop a **relational core** that already encodes production-minded commerce rules—cart isolation, immutable order line pricing, and nullable admin governance.
+The current release delivers a polished customer-facing storefront (migrated from a legacy static design system) atop a **relational core** that already encodes production-minded commerce rules—**guest checkout**, client-side cart persistence, immutable order line pricing, and nullable admin governance.
 
 ---
 
@@ -40,7 +40,7 @@ Years later, I revisited that same brand identity with a mature **systems-builde
 |-----------|--------|-------|
 | **Presentation** | Monolithic `.html` files | Vue 3 SFCs + Composition API (`<script setup>`) |
 | **Type Safety** | None | TypeScript interfaces across products, cart, and blog domains |
-| **State** | DOM scripts & Bootstrap collapse | Reactive `ref` / `computed` patterns via Inertia |
+| **State** | DOM scripts & Bootstrap collapse | Reactive `ref` / `computed` + `localStorage` cart via Inertia |
 | **Data** | Hard-coded placeholders | MySQL schema with normalized carts, orders, and catalog tables |
 | **Layout** | Copy-pasted nav/footer | `ShopLayout.vue` + reusable `ProductCard.vue` |
 
@@ -59,7 +59,7 @@ This repository is therefore a **living portfolio artifact**: it documents both 
 | **Styling** | Bootstrap 4 + Font Awesome 4 + custom CSS | Legacy-faithful brand system, integrated via Vite |
 | **Database** | MySQL | Relational commerce schema (SQLite supported for local dev) |
 | **Routing Helpers** | Ziggy | Named Laravel routes inside Vue templates |
-| **Quality** | Pest PHP | Feature tests for storefront and form pipelines |
+| **Quality** | Pest PHP | Feature tests for storefront, contact, and guest checkout |
 
 ---
 
@@ -70,15 +70,19 @@ These decisions separate Rymo from generic CRUD demos:
 ### 🔀 Decoupled Cart vs. Order Logic
 
 ```
+LocalStorage cart (client)     POST /checkout (OrderController)
+        │                                │
+        ▼                                ▼
 carts ──< cart_items          orders ──< order_items
-  │                              │
-  └── ephemeral shopping state   └── immutable commercial record
+  │         (analytics)            │
+  └── linked via order_id          └── immutable commercial record
 ```
 
-- **`carts` / `cart_items`** model *intent*—mutable quantities, live catalog references, and `price_at_addition` snapshots at add-to-cart time.
-- **`orders` / `order_items`** model *commitment*—created only after checkout succeeds.
+- **Client-side cart** (`useCart` composable + `localStorage`) models *live shopping intent*—add/remove items, quantity edits, and coupon UI on the Cart page without round-trips to the server.
+- **`carts` / `cart_items`** capture an **analytics snapshot** at checkout time—linked to the guest order via `order_id`, with `price_at_addition` frozen from server-verified catalog prices.
+- **`orders` / `order_items`** model *commitment*—created only after checkout succeeds inside a `DB::transaction()`.
 
-**Why it matters:** Clearing or mutating a cart never corrupts historical orders. Customer support, refunds, and analytics always read from an append-only order ledger—eliminating state deadlocks common in single-table "cart-order" hybrids.
+**Why it matters:** Clearing the browser cart never corrupts historical orders. Customer support, refunds, and analytics always read from an append-only order ledger—eliminating state deadlocks common in single-table "cart-order" hybrids.
 
 ---
 
@@ -91,6 +95,25 @@ price_at_purchase DECIMAL(10, 2)  -- frozen at checkout millisecond
 ```
 
 **Why it matters:** Catalog prices may change due to promotions, inflation, or FX adjustments. Invoices, tax reports, and dispute resolution must reflect what the customer *actually agreed to pay*—not today's list price. Rymo enforces financial immutability at the line-item level.
+
+---
+
+### 🛒 Guest Checkout Pipeline
+
+Checkout is **public**—no account or login required.
+
+| Step | Page | Action |
+|------|------|--------|
+| 1 | `/cart` | Review items, apply coupon (UI), click **Proceed to Checkout** |
+| 2 | `/checkout` | Enter name, phone, and shipping address; review order summary |
+| 3 | `POST /checkout` | Server validates customer info, verifies product IDs, recalculates totals from `products.price`, persists order + line items + analytics cart snapshot |
+| 4 | `/cart` (redirect) | Success flash, localStorage cart cleared, empty-cart confirmation |
+
+**Security rules enforced server-side:**
+
+- Frontend prices from `localStorage` are **never trusted**—`OrderController@store` reads authoritative prices from the database.
+- The entire persistence path runs inside `DB::transaction()` for atomicity.
+- Guest orders store `customer_name`, `customer_phone`, and `shipping_address` on the order row; `user_id` remains nullable.
 
 ---
 
@@ -120,7 +143,8 @@ payment_method DEFAULT 'COD'
 - 🛒 **Shop** — Paginated catalog with coral-themed Bootstrap pagination
 - 🔍 **Product Detail** — Gallery thumbnails, size selector, quantity input, related products
 - 📰 **Blog** — Editorial layout migrated from static templates
-- 🧺 **Reactive Cart** — Live subtotal / shipping / total via Vue `computed` state
+- 🧺 **Reactive Cart** — Client-side `localStorage` cart with live subtotal / shipping / total via Vue `computed` state; coupon panel on Cart page
+- 🧾 **Guest Checkout** — Dedicated `/checkout` page for shipping details and order summary; places orders without authentication
 - 📬 **Contact** — Brand-aligned form with server-side validation & flash feedback
 - 📱 **Responsive Navbar** — Mobile collapse via Vue (no Bootstrap JS / jQuery dependency conflicts)
 
@@ -129,17 +153,19 @@ payment_method DEFAULT 'COD'
 - 🧩 **Reusable components** — `ProductCard.vue`, `ShopLayout.vue`
 - 🔗 **SEO-ready catalog** — `products.slug` unique index (route migration in progress)
 - 🎨 **Poppins typography** — Google Fonts import matching the original design system
-- ✅ **Automated tests** — Pest feature coverage for shop, home, and storefront pages
+- ✅ **Automated tests** — Pest feature coverage for shop, home, storefront pages, and guest checkout (`CheckoutOrderTest`)
 
-### 🗄️ Data Model (Ready for Wiring)
+### 🗄️ Data Model
 
 | Entity | Purpose |
 |--------|---------|
 | `categories` | Catalog taxonomy |
-| `products` | Slug, SKU, stock, pricing, ratings, optional flat attributes |
-| `carts` / `cart_items` | Session-persistent shopping intent |
-| `orders` / `order_items` | Post-checkout immutable records |
+| `products` | Slug, SKU, stock, pricing, ratings, gallery, available sizes |
+| `carts` / `cart_items` | Post-checkout analytics snapshots (`user_id` nullable, `order_id` FK) |
+| `orders` / `order_items` | Guest/authenticated orders with frozen `price_at_purchase` per line |
 | `admins` | Operational approval & fulfillment actors |
+
+**Guest order columns:** `customer_name`, `customer_phone`, `shipping_address`, nullable `user_id`, `status` defaulting to `pending`, `payment_method` defaulting to `COD`.
 
 ---
 
@@ -169,20 +195,25 @@ payment_method DEFAULT 'COD'
 
 ```
 rymo-ecommerce/
-├── app/                        # Laravel application core
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── OrderController.php # Guest checkout persistence
+│   │   └── ShopController.php  # Catalog & product detail
+│   └── Models/                 # Order, OrderItem, Cart, CartItem, Product, …
 ├── database/
-│   ├── migrations/             # Commerce schema (carts, orders, products, …)
+│   ├── migrations/             # Commerce schema (guest checkout fields, …)
 │   └── seeders/
 ├── resources/
 │   ├── css/app.css             # Bootstrap-era brand styles + shop overrides
 │   └── js/
-│       ├── components/         # ProductCard, …
+│       ├── components/         # ProductCard, Header, …
+│       ├── composables/        # useCart.ts (localStorage cart state)
 │       ├── layouts/            # ShopLayout.vue
-│       ├── pages/              # Home, Shop, Cart, Blog, Contact, …
+│       ├── pages/              # Home, Shop, Cart, Checkout, Blog, Contact, …
 │       └── types/              # TypeScript domain interfaces
 ├── public/img/                 # Storefront media assets
-├── routes/web.php              # Inertia storefront routes
-└── tests/Feature/              # Pest coverage
+├── routes/web.php              # Storefront + checkout routes
+└── tests/Feature/              # Pest coverage (incl. CheckoutOrderTest)
 ```
 
 ---
@@ -285,15 +316,35 @@ php artisan test --compact
 
 ## 🌐 Default Routes
 
-| Route | Page |
-|-------|------|
-| `/` | Home |
-| `/shop` | Product catalog |
-| `/shop/{slug}` | Product detail |
-| `/blog` | Blog index |
-| `/cart` | Shopping cart |
-| `/contact` | Contact form |
-| `/about` | About (placeholder) |
+| Route | Method | Page / Action |
+|-------|--------|---------------|
+| `/` | GET | Home |
+| `/shop` | GET | Product catalog |
+| `/shop/{slug}` | GET | Product detail |
+| `/blog` | GET | Blog index |
+| `/cart` | GET | Shopping cart |
+| `/checkout` | GET | Checkout (shipping details & order summary) |
+| `/checkout` | POST | Place order (`checkout.store`) — guest-friendly, no auth |
+| `/contact` | GET | Contact form |
+| `/contact` | POST | Submit contact message |
+| `/about` | GET | About (placeholder) |
+
+### Checkout payload (POST `/checkout`)
+
+```json
+{
+  "customer_info": {
+    "name": "Jane Guest",
+    "phone": "+1 555-0100",
+    "address": "123 Main Street, Springfield, US"
+  },
+  "cart_items": [
+    { "id": 1, "quantity": 2 }
+  ]
+}
+```
+
+On success, the server redirects to `/cart` with a flash message; the client clears `localStorage` and shows the confirmation state.
 
 ---
 

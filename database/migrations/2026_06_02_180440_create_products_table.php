@@ -26,6 +26,8 @@ return new class extends Migration
             $table->integer('stock')->default(0);
             $table->string('sku')->unique(); // Stock Keeping Unit, later will represent a unique identifier for each product variant (e.g., different sizes or colors) from product_variants table
             $table->string('image_url')->nullable();
+            $table->json('gallery_images')->nullable();
+            $table->json('available_sizes')->nullable();
             $table->timestamps();
         });
     }

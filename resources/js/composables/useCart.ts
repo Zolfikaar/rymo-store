@@ -103,6 +103,10 @@ export function useCart() {
         items.value = items.value.filter((item) => item.id !== id);
     }
 
+    function clearCart(): void {
+        items.value = [];
+    }
+
     return {
         items,
         itemCount,
@@ -110,5 +114,6 @@ export function useCart() {
         subtotal,
         addItem,
         removeItem,
+        clearCart,
     };
 }

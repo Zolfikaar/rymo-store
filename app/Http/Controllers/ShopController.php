@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ProductCardResource;
 use App\Http\Resources\ProductDetailResource;
 use App\Models\Product;
-use App\Support\StorefrontCatalog;
+// use App\Support\StorefrontCatalog;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -56,19 +56,32 @@ class ShopController extends Controller
 
     public function home(): Response
     {
+        $featuredProducts = Product::query()
+            ->where('stock', '>', 0)
+            ->orderByDesc('rating')
+            ->limit(8)
+            ->get();
+
+        $clothesProducts = Product::query()
+            ->whereHas('category', fn ($query) => $query->where('slug', 'clothes'))
+            ->limit(4)
+            ->get();
+
+        $watchesProducts = Product::query()
+            ->whereHas('category', fn ($query) => $query->where('slug', 'watches'))
+            ->limit(4)
+            ->get();
+
+        $shoesProducts = Product::query()
+            ->whereHas('category', fn ($query) => $query->where('slug', 'shoes'))
+            ->limit(4)
+            ->get();
+
         return Inertia::render('Home', [
-            'featuredProducts' => ProductCardResource::collection(
-                StorefrontCatalog::homeSectionProducts('featured'),
-            )->resolve(),
-            'clothesProducts' => ProductCardResource::collection(
-                StorefrontCatalog::homeSectionProducts('clothes'),
-            )->resolve(),
-            'watchesProducts' => ProductCardResource::collection(
-                StorefrontCatalog::homeSectionProducts('watches'),
-            )->resolve(),
-            'shoesProducts' => ProductCardResource::collection(
-                StorefrontCatalog::homeSectionProducts('shoes'),
-            )->resolve(),
+            'featuredProducts' => ProductCardResource::collection($featuredProducts)->resolve(),
+            'clothesProducts' => ProductCardResource::collection($clothesProducts)->resolve(),
+            'watchesProducts' => ProductCardResource::collection($watchesProducts)->resolve(),
+            'shoesProducts' => ProductCardResource::collection($shoesProducts)->resolve(),
         ]);
     }
 }
