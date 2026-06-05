@@ -26,6 +26,14 @@ class StorefrontCatalog
     /**
      * @return list<array<string, mixed>>
      */
+    public static function brands(): array
+    {
+        return self::data()['brands'];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
     public static function products(): array
     {
         return self::data()['products'];
@@ -94,5 +102,13 @@ class StorefrontCatalog
     public static function productSeederRows(): array
     {
         return self::products();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function brandSeederRows(): array
+    {
+        return self::brands();
     }
 }

@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -60,13 +63,27 @@ Route::get('/checkout', function () {
 
 Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::patch('/dashboard/orders/{order}', [DashboardController::class, 'updateStatus'])
-    ->name('dashboard.orders.update-status')
-    ->middleware('auth');
+    Route::patch('/orders/{order}', [DashboardController::class, 'updateStatus'])
+        ->name('dashboard.orders.update-status');
+
+    Route::get('/products', [ProductController::class, 'index'])->name('dashboard.products.index');
+    Route::post('/products', [ProductController::class, 'store'])->name('dashboard.products.store');
+    Route::put('/products/{product:id}', [ProductController::class, 'update'])->name('dashboard.products.update');
+    Route::delete('/products/{product:id}', [ProductController::class, 'destroy'])->name('dashboard.products.destroy');
+
+    Route::get('/categories', [CategoryController::class, 'index'])->name('dashboard.categories.index');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('dashboard.categories.store');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('dashboard.categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('dashboard.categories.destroy');
+
+    Route::get('/brands', [BrandController::class, 'index'])->name('dashboard.brands.index');
+    Route::post('/brands', [BrandController::class, 'store'])->name('dashboard.brands.store');
+    Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('dashboard.brands.update');
+    Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('dashboard.brands.destroy');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

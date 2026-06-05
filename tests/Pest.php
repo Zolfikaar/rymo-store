@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\BrandSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,6 +56,7 @@ function seedStorefrontCatalog(): void
 {
     test()->seed([
         CategorySeeder::class,
+        BrandSeeder::class,
         ProductSeeder::class,
     ]);
 }

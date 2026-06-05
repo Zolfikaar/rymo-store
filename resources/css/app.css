@@ -81,3 +81,115 @@ img {
     display: unset;
 }
 
+/* Dashboard catalog modals — solid light surface over dark app shell */
+.dashboard-form-modal {
+    background-color: #fff !important;
+    color: #1d1d1d !important;
+    border-color: #e5e5e5 !important;
+    box-shadow: 0 20px 40px rgb(0 0 0 / 18%) !important;
+}
+
+.dashboard-form-modal__description {
+    color: #666 !important;
+}
+
+.dashboard-form-modal label,
+.dashboard-form-modal .dashboard-form-modal__checkbox-label {
+    color: #1d1d1d;
+}
+
+.dashboard-form-modal textarea,
+.dashboard-form-modal select,
+.dashboard-form-modal input:not([type='checkbox']):not([type='file']) {
+    background-color: #fff;
+    color: #1d1d1d;
+}
+
+.dashboard-form-modal .text-muted-foreground {
+    color: #888 !important;
+}
+
+.dashboard-form-modal .dashboard-modal-btn--outline {
+    background-color: #fff !important;
+    color: #1d1d1d !important;
+    border: 1px solid #d0d0d0 !important;
+    box-shadow: none !important;
+}
+
+.dashboard-form-modal .dashboard-modal-btn--outline:hover {
+    background-color: #f5f5f5 !important;
+    color: #1d1d1d !important;
+}
+
+.dashboard-form-modal .dashboard-modal-btn--primary {
+    background-color: #fb774b !important;
+    color: #fff !important;
+    border: 1px solid #fb774b !important;
+}
+
+.dashboard-form-modal .dashboard-modal-btn--primary:hover:not(:disabled) {
+    background-color: #e8663a !important;
+    color: #fff !important;
+}
+
+.dashboard-form-modal .dashboard-modal-btn--danger {
+    background-color: #fff !important;
+    color: #b42318 !important;
+    border: 1px solid #f0c4c2 !important;
+}
+
+.dashboard-form-modal .dashboard-modal-btn--danger:hover {
+    background-color: #fff5f5 !important;
+    color: #962018 !important;
+}
+
+.dashboard-form-modal .dashboard-image-upload {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px dashed #d0d0d0;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: #fafafa;
+    color: #1d1d1d;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dashboard-form-modal .dashboard-image-upload:hover {
+    border-color: #fb774b;
+    color: #fb774b;
+    background: #fff8f5;
+}
+
+.dashboard-form-modal .dashboard-image-preview {
+    width: 96px;
+    height: 96px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    border: 1px solid #e5e5e5;
+}
+
+.dashboard-form-modal .dashboard-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 0.75rem;
+}
+
+.dashboard-form-modal .dashboard-gallery-item {
+    position: relative;
+}
+
+.dashboard-form-modal .dashboard-gallery-item__remove {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    min-width: auto;
+    height: 1.5rem;
+    padding: 0 0.375rem;
+    font-size: 0.6875rem;
+    line-height: 1;
+}
+

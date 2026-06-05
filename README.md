@@ -4,7 +4,7 @@
 
 ### *A decoupled, high-performance monolithic commerce platform—engineered for disciplined MVPs and enterprise-grade scale.*
 
-[![Laravel](https://img.shields.io/badge/Laravel-11%2B-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![Vue](https://img.shields.io/badge/Vue%203-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white)](https://vuejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Inertia](https://img.shields.io/badge/Inertia.js-9558D9?style=for-the-badge)](https://inertiajs.com)
@@ -20,7 +20,13 @@
 
 Rymo is not a tutorial clone. It is a **financially disciplined MVP**: every schema decision, UI component, and checkout pathway is designed to minimize rework cost while preserving a credible path toward multi-currency operations, variant matrices, and admin orchestration at scale.
 
-The current release delivers a polished customer-facing storefront (migrated from a legacy static design system) atop a **relational core** that already encodes production-minded commerce rules—**guest checkout**, client-side cart persistence, immutable order line pricing, and nullable admin governance.
+The current release delivers:
+
+- A polished **customer-facing storefront** (migrated from a legacy static design system)
+- **Guest checkout** with client-side cart persistence and immutable order line pricing
+- An authenticated **admin dashboard** for order fulfillment, catalog CRUD, and product image uploads
+
+All atop a **relational core** that encodes production-minded commerce rules.
 
 ---
 
@@ -39,10 +45,11 @@ Years later, I revisited that same brand identity with a mature **systems-builde
 | Dimension | Before | After |
 |-----------|--------|-------|
 | **Presentation** | Monolithic `.html` files | Vue 3 SFCs + Composition API (`<script setup>`) |
-| **Type Safety** | None | TypeScript interfaces across products, cart, and blog domains |
+| **Type Safety** | None | TypeScript interfaces across products, cart, orders, and catalog domains |
 | **State** | DOM scripts & Bootstrap collapse | Reactive `ref` / `computed` + `localStorage` cart via Inertia |
-| **Data** | Hard-coded placeholders | MySQL schema with normalized carts, orders, and catalog tables |
+| **Data** | Hard-coded placeholders | MySQL schema with normalized carts, orders, brands, and catalog tables |
 | **Layout** | Copy-pasted nav/footer | `ShopLayout.vue` + reusable `ProductCard.vue` |
+| **Operations** | None | Auth-protected dashboard with orders, products, categories & brands |
 
 This repository is therefore a **living portfolio artifact**: it documents both the aesthetic foundation I established early on *and* the architectural maturity I applied when transforming it into a defensible commerce platform.
 
@@ -52,14 +59,15 @@ This repository is therefore a **living portfolio artifact**: it documents both 
 
 | Layer | Technology | Role |
 |-------|------------|------|
-| **Backend** | Laravel 11+ (12.x runtime) | Routing, validation, ORM, queues, and domain persistence |
+| **Backend** | Laravel 12 | Routing, validation, ORM, file storage, and domain persistence |
 | **Frontend** | Vue 3 + Vite | Component-driven UI with Composition API |
 | **Monolithic Bridge** | Inertia.js v2 | SPA ergonomics without a separate API surface |
-| **Type Safety** | TypeScript | Prop contracts (`Product`, `CartItem`, `BlogPost`, `ProductDetail`) |
-| **Styling** | Bootstrap 4 + Font Awesome 4 + custom CSS | Legacy-faithful brand system, integrated via Vite |
+| **Type Safety** | TypeScript | Prop contracts for storefront, cart, dashboard, and catalog types |
+| **Admin UI** | Tailwind CSS + shadcn-vue | Sidebar shell, modals, and form components for the dashboard |
+| **Storefront Styling** | Bootstrap 4 + Font Awesome 4 + custom CSS | Legacy-faithful brand system, integrated via Vite |
 | **Database** | MySQL | Relational commerce schema (SQLite supported for local dev) |
 | **Routing Helpers** | Ziggy | Named Laravel routes inside Vue templates |
-| **Quality** | Pest PHP | Feature tests for storefront, contact, and guest checkout |
+| **Quality** | Pest PHP | Feature tests for storefront, checkout, and dashboard modules |
 
 ---
 
@@ -117,21 +125,13 @@ Checkout is **public**—no account or login required.
 
 ---
 
-### 🛡️ Safe Administrative Pipelines
+### 🛡️ Safe Delete Constraints (Dashboard)
 
-The `orders` table includes:
+Catalog and product deletes are guarded to protect order history:
 
-```sql
-admin_id BIGINT UNSIGNED NULLABLE  -- FK → admins.id (ON DELETE SET NULL)
-status   ENUM('pending','processing','shipped','delivered','cancelled')
-payment_method DEFAULT 'COD'
-```
-
-**Why it matters:**
-
-- ✅ Customers complete **frictionless guest-style checkout** without admin pre-approval.
-- ✅ Back-office staff attach to orders *after* submission—preserving role validation without blocking conversion.
-- ✅ Cash-on-Delivery (`COD`) is first-class—ideal for regional MVP launches before card gateways arrive.
+- **Categories / brands** cannot be deleted while products still reference them.
+- **Products** cannot be deleted when they appear on existing orders.
+- Successful deletes run inside database transactions; uploaded images under `/storage/products/` are cleaned up when safe.
 
 ---
 
@@ -148,24 +148,38 @@ payment_method DEFAULT 'COD'
 - 📬 **Contact** — Brand-aligned form with server-side validation & flash feedback
 - 📱 **Responsive Navbar** — Mobile collapse via Vue (no Bootstrap JS / jQuery dependency conflicts)
 
+### 🎛️ Admin Dashboard (Authenticated)
+
+Requires login and email verification. Access via `/dashboard` or **View Storefront** in the header to jump back to the shop.
+
+| Section | Route | Capabilities |
+|---------|-------|--------------|
+| **Orders** | `/dashboard` | Stats cards, paginated order table, expandable line items, status updates (`pending` / `completed` / `canceled`) |
+| **Products** | `/dashboard/products` | Full CRUD, category & brand assignment, size checkboxes, main image + gallery uploads from device |
+| **Categories & Brands** | `/dashboard/categories`, `/dashboard/brands` | Tabbed CRUD with modal forms for names and slugs |
+
+**Product media:** Images upload to `storage/app/public/products/` and are served at `/storage/products/...`. Run `php artisan storage:link` once after install.
+
 ### 🧱 Engineering Conventions
 
-- 🧩 **Reusable components** — `ProductCard.vue`, `ShopLayout.vue`
-- 🔗 **SEO-ready catalog** — `products.slug` unique index (route migration in progress)
+- 🧩 **Reusable components** — `ProductCard.vue`, `ShopLayout.vue`, dashboard modals under `components/dashboard/`
+- 🔗 **SEO-ready catalog** — `products.slug` unique index with implicit route model binding on the storefront
 - 🎨 **Poppins typography** — Google Fonts import matching the original design system
-- ✅ **Automated tests** — Pest feature coverage for shop, home, storefront pages, and guest checkout (`CheckoutOrderTest`)
+- ✅ **Automated tests** — Pest feature coverage for storefront pages, guest checkout, and dashboard orders / catalog / products
 
 ### 🗄️ Data Model
 
 | Entity | Purpose |
 |--------|---------|
-| `categories` | Catalog taxonomy |
-| `products` | Slug, SKU, stock, pricing, ratings, gallery, available sizes |
+| `categories` | Catalog taxonomy (`name`, `slug`, `is_active`) |
+| `brands` | Normalized brand records linked to products |
+| `products` | Slug, SKU, stock, pricing, `brand_id`, gallery JSON, `available_sizes` JSON |
 | `carts` / `cart_items` | Post-checkout analytics snapshots (`user_id` nullable, `order_id` FK) |
 | `orders` / `order_items` | Guest/authenticated orders with frozen `price_at_purchase` per line |
-| `admins` | Operational approval & fulfillment actors |
+| `admins` | Operational schema (reserved for future fulfillment workflows) |
+| `users` | Laravel auth users with access to the admin dashboard |
 
-**Guest order columns:** `customer_name`, `customer_phone`, `shipping_address`, nullable `user_id`, `status` defaulting to `pending`, `payment_method` defaulting to `COD`.
+**Guest order columns:** `customer_name`, `customer_phone`, `shipping_address`, nullable `user_id`, `status` (`pending` | `completed` | `canceled`), `payment_method` defaulting to `COD`.
 
 ---
 
@@ -173,9 +187,10 @@ payment_method DEFAULT 'COD'
 
 ### Phase 2 — Advanced Products
 
-- [ ] Migrate from flat `products.color` / `products.size` columns to a **Parent–Child variant matrix**
+- [x] Admin CRUD for categories, brands, and products (with image uploads)
+- [ ] Migrate from flat `products.color` / size JSON to a **Parent–Child variant matrix**
 - [ ] Introduce `product_variants` with overlapping attribute combinations and dynamic SKUs
-- [ ] Admin UI for variant inventory sync and thumbnail galleries per SKU
+- [ ] Bulk import / export for catalog operations
 
 ### Phase 3 — Localization & FinTech
 
@@ -197,23 +212,35 @@ payment_method DEFAULT 'COD'
 rymo-ecommerce/
 ├── app/
 │   ├── Http/Controllers/
-│   │   ├── OrderController.php # Guest checkout persistence
-│   │   └── ShopController.php  # Catalog & product detail
-│   └── Models/                 # Order, OrderItem, Cart, CartItem, Product, …
+│   │   ├── DashboardController.php   # Order management & stats
+│   │   ├── ProductController.php     # Admin product CRUD + uploads
+│   │   ├── CategoryController.php    # Admin category CRUD
+│   │   ├── BrandController.php       # Admin brand CRUD
+│   │   ├── OrderController.php       # Guest checkout persistence
+│   │   └── ShopController.php        # Catalog & product detail
+│   ├── Http/Resources/               # Storefront & dashboard API resources
+│   ├── Models/                       # Order, Product, Category, Brand, Cart, …
+│   └── Support/
+│       ├── StorefrontCatalog.php     # Canonical seed data helper
+│       └── ProductImageStorage.php   # Public disk upload helper
 ├── database/
-│   ├── migrations/             # Commerce schema (guest checkout fields, …)
+│   ├── data/storefront-catalog.php   # Single source for seeders
+│   ├── migrations/
 │   └── seeders/
 ├── resources/
-│   ├── css/app.css             # Bootstrap-era brand styles + shop overrides
+│   ├── css/app.css                   # Storefront + dashboard modal styles
 │   └── js/
-│       ├── components/         # ProductCard, Header, …
-│       ├── composables/        # useCart.ts (localStorage cart state)
-│       ├── layouts/            # ShopLayout.vue
-│       ├── pages/              # Home, Shop, Cart, Checkout, Blog, Contact, …
-│       └── types/              # TypeScript domain interfaces
-├── public/img/                 # Storefront media assets
-├── routes/web.php              # Storefront + checkout routes
-└── tests/Feature/              # Pest coverage (incl. CheckoutOrderTest)
+│       ├── components/               # ProductCard, AppSidebar, dashboard modals, …
+│       ├── composables/              # useCart.ts (localStorage cart state)
+│       ├── layouts/                  # ShopLayout, AppLayout (dashboard shell)
+│       ├── pages/
+│       │   ├── Dashboard.vue         # Orders management
+│       │   └── Dashboard/            # Products.vue, Catalog.vue
+│       └── types/                    # shop.ts, dashboard.ts, catalog.ts
+├── public/img/                       # Legacy storefront media assets
+├── storage/app/public/products/      # Admin-uploaded product images
+├── routes/web.php                    # Storefront + dashboard routes
+└── tests/Feature/                    # Pest coverage (storefront + dashboard)
 ```
 
 ---
@@ -272,9 +299,21 @@ DB_PASSWORD=
 php artisan migrate:fresh --seed
 ```
 
+The seeder creates a default user (`test@example.com`) you can use to log in and access the dashboard. Register a new account if you prefer.
+
 ---
 
-### 4️⃣ Frontend Assets
+### 4️⃣ Storage Link (Product Uploads)
+
+Required for admin product image uploads to be publicly accessible:
+
+```bash
+php artisan storage:link
+```
+
+---
+
+### 5️⃣ Frontend Assets
 
 Ensure storefront images are present under `public/img/` (brand, shop, blog, cart media).
 
@@ -284,7 +323,7 @@ npm run dev
 
 ---
 
-### 5️⃣ Run the Application
+### 6️⃣ Run the Application
 
 **Option A — Dual process (recommended for development):**
 
@@ -306,15 +345,23 @@ composer run dev
 
 ---
 
-### 6️⃣ Run Tests
+### 7️⃣ Run Tests
 
 ```bash
 php artisan test --compact
 ```
 
+Dashboard-specific suites:
+
+```bash
+php artisan test --compact tests/Feature/DashboardOrdersTest.php tests/Feature/DashboardCatalogTest.php tests/Feature/DashboardProductsTest.php
+```
+
 ---
 
-## 🌐 Default Routes
+## 🌐 Routes
+
+### Storefront
 
 | Route | Method | Page / Action |
 |-------|--------|---------------|
@@ -328,6 +375,25 @@ php artisan test --compact
 | `/contact` | GET | Contact form |
 | `/contact` | POST | Submit contact message |
 | `/about` | GET | About (placeholder) |
+
+### Auth
+
+| Route | Method | Action |
+|-------|--------|--------|
+| `/login` | GET/POST | Sign in |
+| `/register` | GET/POST | Create account |
+| `/dashboard` | GET | Admin dashboard (auth + verified) |
+
+### Dashboard (auth + verified)
+
+| Route | Method | Action |
+|-------|--------|--------|
+| `/dashboard` | GET | Orders management & stats |
+| `/dashboard/orders/{order}` | PATCH | Update order status |
+| `/dashboard/products` | GET/POST | List / create products |
+| `/dashboard/products/{id}` | PUT/DELETE | Update / delete product |
+| `/dashboard/categories` | GET/POST/PUT/DELETE | Category CRUD |
+| `/dashboard/brands` | GET/POST/PUT/DELETE | Brand CRUD |
 
 ### Checkout payload (POST `/checkout`)
 
