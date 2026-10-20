@@ -2,9 +2,8 @@
 
 # Rymo Store
 
-### Production-grade full-stack e-commerce monolith — engineered for performance, data integrity, and operational scale.
+### Full-stack e-commerce portfolio project — Vue 3, TypeScript, Inertia.js and Laravel.
 
-[![Live](https://img.shields.io/badge/Live-167.99.248.94-22C55E?style=for-the-badge)](http://167.99.248.94)
 [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![Vue](https://img.shields.io/badge/Vue%203-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white)](https://vuejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -14,9 +13,9 @@
 [![PHP](https://img.shields.io/badge/PHP_8.3--FPM-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net)
 [![Nginx](https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org)
 
-**Self-hosted on DigitalOcean Ubuntu VPS** · Laravel + Inertia + Vue 3 + TypeScript + MySQL
+**Previously deployed on a DigitalOcean Ubuntu VPS (demo currently offline)** · Laravel + Inertia + Vue 3 + TypeScript + MySQL
 
-[🌐 Live Storefront](http://167.99.248.94) · [📊 Admin Dashboard](http://167.99.248.94/dashboard) · [Repository Structure](#-repository-map)
+[Interface Preview](#interface-preview) · [Repository Structure](#-repository-map)
 
 </div>
 
@@ -24,7 +23,7 @@
 
 ## 🚀 Project Overview
 
-**Rymo Store** is a modern, robust, and scalable e-commerce platform delivered as a **single deployable monolith**—combining a reactive Vue 3 storefront with a disciplined Laravel backend, bridged by Inertia.js v2.
+**Rymo Store** is a full-stack e-commerce portfolio project delivered as a **single deployable monolith**—combining a reactive Vue 3 storefront with a disciplined Laravel backend, bridged by Inertia.js v2.
 
 Unlike split API/SPA architectures that multiply deployment surfaces and contract drift, Rymo preserves **one codebase, one deployment unit, and one source of truth**—while still delivering SPA-grade interactivity on the client.
 
@@ -36,50 +35,43 @@ Unlike split API/SPA architectures that multiply deployment surfaces and contrac
 | **Media pipeline** | Admin product image uploads to public storage with gallery management |
 | **Quality gates** | Pest PHP feature tests across storefront, checkout, and dashboard modules |
 
-Built as a **portfolio-grade production system**, not a tutorial clone—every layer reflects deliberate trade-offs between MVP velocity and long-term maintainability.
+Built as a portfolio project to demonstrate storefront UX, dashboard interfaces, and full-stack application design.
 
 ---
 
-## 🌐 Live Demo
+## Interface Preview
 
-> **Deployed on a self-managed DigitalOcean Ubuntu VPS** — configured end-to-end by the author.
+> Screenshots of the locally running application. The former hosted demo is no longer available.
 
-<table>
-<tr>
-<td width="50%">
+> Add the screenshots to `docs/screenshots/` before publishing this section.
 
-### 🛍️ Storefront
+### Storefront
+![Rymo Store storefront](docs/screenshots/storefront.png)
 
-**http://167.99.248.94**
+### Product Catalog
+![Product catalog](docs/screenshots/catalog.png)
 
-Browse the catalog, add items to cart, and complete guest checkout—no account required.
+### Shopping Cart
+![Shopping cart](docs/screenshots/cart.png)
 
-| Page | Path |
-|------|------|
-| Home | `/` |
-| Shop | `/shop` |
-| Product Detail | `/shop/{slug}` |
-| Cart | `/cart` |
-| Checkout | `/checkout` |
+### Admin Dashboard
+![Admin dashboard](docs/screenshots/dashboard.png)
 
-</td>
-<td width="50%">
+### Product Management
+![Product management](docs/screenshots/product-management.png)
 
-### 📊 Admin Dashboard
+### Mobile Experience
+![Mobile storefront](docs/screenshots/mobile-storefront.png)
 
-**http://167.99.248.94/dashboard**
+### Application Routes (when running locally)
 
-Full back-office CMS for catalog and order management. Credentials below.
-
-| Module | Path |
-|--------|------|
-| Orders | `/dashboard` |
-| Products | `/dashboard/products` |
-| Categories & Brands | `/dashboard/categories` |
-
-</td>
-</tr>
-</table>
+| Storefront | Route | Admin | Route |
+|---|---|---|---|
+| Home | `/` | Dashboard | `/dashboard` |
+| Shop | `/shop` | Products | `/dashboard/products` |
+| Product detail | `/shop/{slug}` | Categories & brands | `/dashboard/categories` |
+| Cart | `/cart` | | |
+| Checkout | `/checkout` | | |
 
 ---
 
@@ -105,54 +97,8 @@ The admin panel is a **comprehensive back-office CMS** built on Tailwind CSS and
 
 ### Operator UX
 - Sidebar navigation across Orders · Products · Categories & Brands
-- **View Storefront** header action — one click back to the live shop
+- **View Storefront** header action — one click back to the storefront
 - Modal-driven create/edit flows with `useForm` — no full-page reloads
-
----
-
-## 💡 Testing Credentials
-
-Use these credentials to evaluate the live admin dashboard during a technical review.
-
-<table>
-<tr>
-<td>
-
-**Dashboard URL**
-
-```
-http://167.99.248.94/dashboard
-```
-
-</td>
-<td>
-
-**Test Email**
-
-```
-admin@rymo.store
-```
-
-</td>
-<td>
-
-**Test Password**
-
-```
-RymoStoreAdmin2026!
-```
-
-</td>
-</tr>
-</table>
-
-> 🔒 Credentials are scoped for recruiter evaluation. The dashboard requires a verified authenticated session.
-
-**Suggested 2-minute review path:**
-1. Log in → review order stats and update an order status
-2. Open **Products** → inspect CRUD table, open edit modal, note image upload UX
-3. Open **Categories & Brands** → verify taxonomy modals and safe-delete behavior
-4. Click **View Storefront** → confirm catalog reflects admin data
 
 ---
 
@@ -220,9 +166,9 @@ The monolith maintains **type safety across the server–client boundary** witho
 
 ---
 
-## ⚙️ Production Deployment & DevOps Stack
+## ⚙️ Previous Deployment & DevOps Stack
 
-This application is **deployed and operated on a self-managed DigitalOcean Ubuntu VPS**—configured from scratch without managed PaaS abstraction.
+The application **was previously deployed** on a self-managed DigitalOcean Ubuntu VPS. The server has since been deleted; the topology below documents the former deployment.
 
 ### Infrastructure Topology
 
@@ -288,7 +234,7 @@ sudo systemctl reload php8.3-fpm && sudo systemctl reload nginx
 | Storefront UI | Bootstrap 4 heritage + custom CSS (brand-faithful migration) |
 | Database | MySQL 8 |
 | Testing | Pest PHP 3 |
-| Hosting | DigitalOcean Ubuntu VPS · Nginx |
+| Previous hosting (offline) | DigitalOcean Ubuntu VPS · Nginx |
 
 ---
 
@@ -321,10 +267,10 @@ rymo-ecommerce/
 ## 🧪 Local Development
 
 ```bash
-git clone <repository-url> && cd rymo-ecommerce
+git clone https://github.com/Zolfikaar/rymo-store.git && cd rymo-store
 composer install && npm install
 cp .env.example .env && php artisan key:generate
-php artisan migrate:fresh --seed
+php artisan migrate:fresh --seed  # destructive: use only with a disposable local database
 php artisan storage:link
 composer run dev   # artisan serve + vite + queue listener
 ```
@@ -340,7 +286,7 @@ php artisan test --compact
 - [x] Guest checkout with transactional integrity
 - [x] Admin dashboard — orders, products, categories, brands
 - [x] Product image uploads (main + gallery)
-- [x] Production VPS deployment (DigitalOcean)
+- [x] Previous VPS deployment (DigitalOcean; currently offline)
 - [ ] Product variant matrix (`product_variants` parent–child model)
 - [ ] Multi-currency engine (USD / IQD)
 - [ ] Arabic / English localization with RTL support
@@ -349,14 +295,14 @@ php artisan test --compact
 
 ## 📜 License
 
-Open-source under the **[MIT License](LICENSE)**.
+Licensed under the **[MIT License](LICENSE)**, if the repository includes the linked license file.
 
 ---
 
 <div align="center">
 
-**Built by a Software Engineer who ships full-stack systems—not slide decks.**
+**Rymo Store — Vue 3 · TypeScript · Inertia.js · Laravel**
 
-[🌐 Live Store](http://167.99.248.94) · [📊 Dashboard](http://167.99.248.94/dashboard) · [⬆ Back to Top](#rymo-store)
+[⬆ Back to Top](#rymo-store)
 
 </div>

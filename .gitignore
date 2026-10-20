@@ -17,6 +17,7 @@ obj/
 *.njsproj
 *.sln.docstates
 .node_modules/
+.env
 ## ====== ملفات نظام التشغيل (OS Files) ======
 # نظام ويندوز
 Thumbs.db
